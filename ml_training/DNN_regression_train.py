@@ -51,7 +51,7 @@ def train_a_class(index, print_periodicity, print_train):
     b_fc_l = tf.concat([bias_x, bias_y],0)
     # learns with the original value, gets the final results with the clipped version
     prediction_l = tf.matmul(h_fc_drop[-1], W_fc_l) + b_fc_l
-    prediction_clip = tf.clip_by_value(prediction_l, 0.0, 1.0)
+    prediction_clip = tf.clip_by_value(prediction_l, 0.0, 1.0, name='prediction')
 
 
     # TF functions
@@ -303,7 +303,10 @@ def train_a_class(index, print_periodicity, print_train):
             #checks the results so far
             non_zeros = np.asarray(non_zeros)
             distance_output = np.asarray(distance_output)
-            results_so_far(index, distance_output, all_test_labels, non_zeros)
+            results_so_far(distance_output, all_test_labels, non_zeros)
+
+            #Also stores the predictions alongside the corresponding data
+            store_predictions(index, prediction_clip, features, softmax)
 
 
     #If there was at least one prediction set with no predictions on this class:
@@ -340,10 +343,10 @@ def train_a_class(index, print_periodicity, print_train):
             non_zeros = np.asarray(non_zeros)
             print("{0} test samples found for this class, with average error "\
                 "of {1}".format(test_samples, np.mean(distances)))
-            results_so_far(index, distances, labels_test, non_zeros)
+            results_so_far(distances, labels_test, non_zeros)
 
 
-def results_so_far(index, new_distances, new_labels, new_non_zeros):
+def results_so_far(new_distances, new_labels, new_non_zeros):
     '''
     Prints the results including all the classes trained so far
     '''
@@ -379,6 +382,61 @@ def results_so_far(index, new_distances, new_labels, new_non_zeros):
     print("Current results: {0} positions evaluated, avg error (m) = {1:.4f}, "\
         "95% percentile (m) = {2:.4f}".format(distances.shape[0], avg_distance,
         distance_95))
+
+
+def store_predictions(index, predictor, features, softmax):
+    '''
+    Stores the predictions for the whole data, given the class "index". This
+    function will only be executed for trained classes (therefore, if the
+    predictions for a given data point are not found, it means the prediction
+    is the center of the most likely class)
+    '''
+
+    prediction_file = 'class_data/class_predictions'
+    assert len(features) == len(softmax)
+
+    #Gets the predictions for this index (in a loop, where each iteration
+    #   corresponds to a previously generated "set")
+    predictions = []
+    for i in range(len(features)):
+
+        this_predictions = []
+        this_features = features[i]
+        this_softmax = softmax[i]
+        this_features_length = this_features.shape[0]
+        end_test = 0
+        j = 0
+        while(end_test < this_features_length):
+            start_test = j * 256 #<-- magic number :D woooo
+            end_test = (j+1) * 256
+            j = j+1
+
+            if(end_test > this_features_length):
+                end_test = this_features_length
+
+            this_predictions.append(predictor.eval(feed_dict={input: this_features[start_test:end_test],
+                                    softmax_predictions: this_softmax[start_test:end_test],
+                                    keep_prob: 1.0, phase: 0}))
+
+        #flattens that list
+        this_predictions = [item for sublist in this_predictions for item in sublist]
+        assert len(this_predictions) == this_features_length
+        predictions.append(this_predictions)
+
+    assert len(features) == len(predictions)
+
+    #Loads the file (if it exists)
+    if os.path.isfile(prediction_file):
+        with open(prediction_file, 'rb') as f:
+                all_predictions = pickle.load(f)
+
+        all_predictions[str(index)] = predictions
+    else:
+        all_predictions = {str(index): predictions}
+
+    #Stores the data
+    with open(prediction_file, 'wb') as f:
+        pickle.dump(all_predictions, f)
 
 
 if __name__ == "__main__":
