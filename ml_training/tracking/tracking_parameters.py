@@ -17,10 +17,12 @@ preprocessed_file = '../processed_data/tf_dataset'
 
 
 #And stores new ones
-tracking_folder = 'tracking_data'
+tracking_folder = 'tracking_data/'
+train_set_file = tracking_folder + 'train_set'
+test_set_file = tracking_folder + 'test_set'
 
 # -> path options: 's' for static, 'p' for pedestrian, 'c' for car
-path_file = tracking_folder + '/paths'
+path_file = tracking_folder + 'paths'
 path_options = {'s_paths': True,      # enables static paths [will have 1 per position]
                 's_len_train': 20,    # number of static paths per position (train)
                 's_len_test': 10,     # number of static paths per position (test)

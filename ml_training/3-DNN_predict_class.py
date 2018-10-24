@@ -18,6 +18,7 @@ import tensorflow as tf
 import pickle
 import numpy as np
 import math
+import time
 
 
 def split_data(predicted_class, softmax_output, features_test, labels_test,
@@ -74,6 +75,10 @@ if __name__ == "__main__":
     #Runs "load_data.py" and keeps its variables
     exec(open("load_data.py").read(), globals())
 
+    #Checks if the class_data folder exists (if not, creates it)
+    if not os.path.exists('class_data'):
+        os.makedirs('class_data')
+
     test_batch_size = dnn_classification_parameters['test_batch_size']
     config = tf.ConfigProto()
     config.gpu_options.allow_growth=True
@@ -108,7 +113,7 @@ if __name__ == "__main__":
             if i < train_sets:
                 features_test, labels_test = create_noisy_features(features,
                     labels, noise_std_converted, min_pow_cutoff, scaler,
-                    only_16_bf, undersampling = test_spatial_undersampling)
+                    only_16_bf, undersampling = train_spatial_undersampling)
             else:
                 features_test, labels_test = create_noisy_features(features,
                     labels, noise_std_converted, min_pow_cutoff, scaler,
