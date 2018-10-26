@@ -27,3 +27,17 @@ path_options = {'s_paths': True,      # enables static paths [will have 1 per po
                 's_len_train': 20,    # number of static paths per position (train)
                 's_len_test': 10,     # number of static paths per position (test)
                 }
+
+
+# RNN parameters
+rnn_parameters = {  'batch_size': 32,
+                    'epochs': 10,
+                    'learning_rate': 1e-4,
+                    'time_steps': 3,
+                    'rnn_neurons': 256
+                    }
+#RNN modes:
+#   0 = uses ONLY the sequence of predictions to return a refined prediction
+#   1 = uses ONLY the sequence of features to return a refined prediction
+#   2 = uses both sequences (concatenated)
+rnn_mode = 0

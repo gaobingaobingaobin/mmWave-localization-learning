@@ -12,5 +12,6 @@ regressor, which will be used as "baseline" here.
 - Meanwhile, prepare the desired settings in "tracking_parameters.py";
 - Generate the paths (i.e. sequence of TRUE positions) with step 5;
 - Obtain the data triplet [noisy_features; baseline_prediction; true_label]
-with step 6;
+with step 6. Steps 5 and 6 are independent, so you can run them both at the
+same time of you have enough computing resources;
 - Use this data to train the RNN in step 7.
